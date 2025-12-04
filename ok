@@ -1,2 +1,3 @@
- ACCESS_TOKEN=$(echo "$TOKEN_JSON" | sed -E 's/^[[:space:]]*\{\s*"access_token"\s*:\s*"([^"]+)".*$/\1/')
-    
+ACCESS_TOKEN=$(echo "$TOKEN_JSON" | grep -o '"access_token"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | cut -d'"' -f4)
+
+echo $ACCESS_TOKEN
