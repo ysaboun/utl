@@ -1,0 +1,120 @@
+#!/bin/sh
+
+# ---------------------------------------------------
+# CONFIG
+# ---------------------------------------------------
+AUTH_URL="https://auth.example.com/oauth2/token"
+CLIENT_ID="votre-client-id"
+CLIENT_SECRET="votre-client-secret"
+
+API1="https://api.example.com/v1/foo"
+API2="https://api.example.com/v1/bar"
+API3="https://api.example.com/v1/baz"
+
+TOKEN_EXP=3300
+
+# Activer parallélisme : PARALLEL=true ./bot-oauth-parallel.sh
+PARALLEL=${PARALLEL:-false}
+
+CURL_PROXY_OPTS="--noproxy '*'"
+
+# ---------------------------------------------------
+get_token() {
+  echo ">>> Obtention d’un nouveau token…"
+
+  RAW=$(curl -s $CURL_PROXY_OPTS -X POST "$AUTH_URL" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "grant_type=client_credentials&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET")
+
+  ACCESS_TOKEN=$(printf "%s" "$RAW" | grep -o '"access_token":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+
+  if [ -z "$ACCESS_TOKEN" ]; then
+    echo "!!! Token introuvable."
+    echo "$RAW"
+    exit 1
+  fi
+
+  TOKEN_START=$(date +%s)
+  echo ">>> Token OK (longueur $(printf "%s" "$ACCESS_TOKEN" | wc -c))"
+}
+
+# ---------------------------------------------------
+token_expired() {
+  NOW=$(date +%s)
+  DIFF=$((NOW - TOKEN_START))
+  [ $DIFF -ge $TOKEN_EXP ]
+}
+
+# ---------------------------------------------------
+call_api_single() {
+  URL="$1"
+  NAME="$2"
+  OUT="/tmp/$NAME.out"
+
+  if token_expired; then
+    echo ">>> Token expiré → nouvelle demande…"
+    get_token
+  fi
+
+  HTTP_CODE=$(curl -s -w "%{http_code}" -o "$OUT" \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
+    $CURL_PROXY_OPTS \
+    "$URL")
+
+  echo "[$NAME] Status: $HTTP_CODE"
+
+  if [ "$HTTP_CODE" = "401" ]; then
+    echo "[$NAME] Token refusé → régénération…"
+    get_token
+
+    HTTP_CODE=$(curl -s -w "%{http_code}" -o "$OUT" \
+      -H "Authorization: Bearer $ACCESS_TOKEN" \
+      $CURL_PROXY_OPTS \
+      "$URL")
+
+    echo "[$NAME] Status après retry : $HTTP_CODE"
+  fi
+
+  echo "[$NAME] Réponse:"
+  cat "$OUT"
+  echo "------------------------------------------"
+}
+
+# ---------------------------------------------------
+# APPELS POUR UN CYCLE
+# ---------------------------------------------------
+run_cycle() {
+  CYCLE=$1
+
+  if [ "$PARALLEL" = "true" ]; then
+    echo ">>> Mode parallèle activé (cycle $CYCLE)"
+
+    call_api_single "$API1" "api1-$CYCLE" &
+    call_api_single "$API2" "api2-$CYCLE" &
+    call_api_single "$API3" "api3-$CYCLE" &
+
+    wait
+  else
+    echo ">>> Mode séquentiel (cycle $CYCLE)"
+    call_api_single "$API1" "api1-$CYCLE"
+    call_api_single "$API2" "api2-$CYCLE"
+    call_api_single "$API3" "api3-$CYCLE"
+  fi
+}
+
+# ---------------------------------------------------
+# MAIN LOGIC : un token réutilisé, 10 cycles
+# ---------------------------------------------------
+get_token
+
+i=1
+while [ $i -le 10 ]; do
+  echo
+  echo "============= CYCLE $i ============="
+  run_cycle "$i"
+  i=$((i+1))
+  sleep 1
+done
+
+echo
+echo ">>> Terminé (mode PARALLEL=$PARALLEL)."
