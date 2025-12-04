@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# ----------------------------
+# CONFIGURATION
+# ----------------------------
+OAUTH_URL="https://auth.example.com/oauth2/token"
+CLIENT_ID="votre_client_id"
+CLIENT_SECRET="votre_client_secret"
+SCOPE="api_scope"
+TMP_DIR="./tmp"
+PARALLEL=false
+CALLS=10
+
+API_LIST=("https://api.example.com/api1" "https://api.example.com/api2" "https://api.example.com/api3")
+
+# Bypass proxy
+export http_proxy=""
+export https_proxy=""
+export no_proxy="*"
+
+# ----------------------------
+# CREATION DU DOSSIER TMP
+# ----------------------------
+mkdir -p "$TMP_DIR"
+
+# ----------------------------
+# FONCTION POUR OBTENIR LE TOKEN
+# ----------------------------
+get_token() {
+    echo "Obtention du token OAuth2..."
+    
+    RESPONSE=$(curl -s -X POST "$OAUTH_URL" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "grant_type=client_credentials&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&scope=$SCOPE")
+
+    TOKEN=$(echo "$RESPONSE" | jq -r '.access_token')
+    
+    if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+        echo "Erreur: impossible d'obtenir le token."
+        echo "Réponse brute: $RESPONSE"
+        exit 1
+    fi
+    echo "Token obtenu : ${TOKEN:0:10}... (truncated)"
+}
+
+# ----------------------------
+# FONCTION POUR APPELER LES API
+# ----------------------------
+call_apis() {
+    local i=$1
+    for api in "${API_LIST[@]}"; do
+        FILE="$TMP_DIR/$(basename "$api")-$i.out"
+        echo "Appel $api -> $FILE"
+        
+        HTTP_RESPONSE=$(curl -s -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$api" -o "$FILE.tmp")
+        HTTP_CODE="${HTTP_RESPONSE: -3}"  # Derniers 3 caractères = code HTTP
+        
+        if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "Erreur HTTP $HTTP_CODE sur $api"
+            mv "$FILE.tmp" "$FILE"
+        else
+            mv "$FILE.tmp" "$FILE"
+        fi
+    done
+}
+
+# ----------------------------
+# SCRIPT PRINCIPAL
+# ----------------------------
+get_token
+
+if [ "$PARALLEL" = true ]; then
+    echo "Appels parallèles activés"
+    for ((i=1; i<=CALLS; i++)); do
+        call_apis "$i" &
+    done
+    wait
+else
+    echo "Appels séquentiels"
+    for ((i=1; i<=CALLS; i++)); do
+        call_apis "$i"
+    done
+fi
+
+echo "Terminé. Les fichiers sont dans $TMP_DIR"
