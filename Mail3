@@ -1,0 +1,30 @@
+Voici la **même matrice**, enrichie avec une **colonne à cocher (Oui/Non)** pour faciliter ta discussion avec David.
+
+Tu peux l’utiliser telle quelle : lui poser les critères un par un et remplir la colonne.
+
+---
+
+## **Matrice de décision — Intervenant = Tiers ?**
+
+| Critère métier                                                                     | Oui / Non     | Décision associée                                               |
+| ---------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------- |
+| Le rôle “intervenant” est-il simplement un **rôle appliqué à un tiers existant** ? | ☐ Oui / ☐ Non | Oui → même objet. Non → objet distinct.                         |
+| Intervenant et tiers doivent-ils être **stockés dans le même référentiel** ?       | ☐ Oui / ☐ Non | Oui → même objet. Non → objets séparés.                         |
+| Le **cycle de vie** (création, validation, désactivation) est-il identique ?       | ☐ Oui / ☐ Non | Oui → même objet. Non → objets séparés.                         |
+| Les **règles RGPD** sont-elles identiques (finalité, durée de conservation) ?      | ☐ Oui / ☐ Non | Oui → ok pour mutualiser. Non → séparation obligatoire.         |
+| Les **types d’entités** sont-ils les mêmes (physique/morale/technique) ?           | ☐ Oui / ☐ Non | Oui → même objet. Non → Intervenant a une typologie spécifique. |
+| Un **tiers peut-il devenir intervenant automatiquement** dans certains processus ? | ☐ Oui / ☐ Non | Oui → rôle Intervenant sur Tiers. Non → séparation.             |
+| Les **attributs** sont-ils identiques (email, fonction, mandat, dates) ?           | ☐ Oui / ☐ Non | Oui → mutualisation. Non → schéma spécifique → séparé.          |
+| Les **droits d’accès et habilitations** sont-ils communs ?                         | ☐ Oui / ☐ Non | Oui → même objet. Non → distinction nécessaire.                 |
+| Y a-t-il un **besoin d’unicité** (un intervenant = un tiers unique) ?              | ☐ Oui / ☐ Non | Oui → fusion ok. Non → séparation plus propre.                  |
+
+---
+
+## **Comment exploiter la matrice**
+
+* Si tu coches **majorité de Oui** → Intervenant = Tiers (objet unique + rôles).
+* Si tu coches **majorité de Non** → Intervenant ≠ Tiers (deux objets métiers distincts).
+
+---
+
+Si tu veux, je peux te générer la **version Word**, **Excel**, ou **diagramme UML** directement.
