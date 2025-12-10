@@ -1,0 +1,72 @@
+Voici une série de **questions précises, professionnelles**, que tu peux poser à David (archi fonctionnel) pour trancher la distinction entre **Tier** et **Intervenant**, et plus largement clarifier la modélisation métier.
+
+Elles sont formulées pour obtenir des réponses nettes, sans tourner autour du pot, et te donner une base solide pour arbitrer.
+
+---
+
+# **Questions à poser à David – Clarification métier Tier / Intervenant**
+
+### **1. Intention métier**
+
+* Quelle est l’intention métier du *Tier* dans notre domaine ?
+* Quelle est l’intention métier de l’*Intervenant* ?
+* Représentent-ils exactement le même concept ou deux concepts différents ?
+
+### **2. Identité métier**
+
+* Un *Intervenant* possède-t-il sa propre identité métier distincte du *Tier* ?
+* Ou reprend-il toujours l’identité du Tier (ex : même identifiant naturel, même clé métier) ?
+
+### **3. Cycle de vie**
+
+* Le *Tier* et l’*Intervenant* sont-ils créés au même moment ?
+* Peuvent-ils évoluer indépendamment l’un de l’autre ?
+* L’un peut-il exister sans l’autre ?
+* Leur suppression suit-elle la même logique ?
+
+### **4. Règles métier**
+
+* Les règles métier associées au *Tier* sont-elles les mêmes que celles de l’*Intervenant* ?
+* Le rôle d’un intervenant entraîne-t-il des validations, constraints, obligations supplémentaires ?
+* Y a-t-il des règles qui ne s’appliquent qu’au Tier, ou qu’à l’Intervenant ?
+
+### **5. Contexte d’utilisation**
+
+* L’Intervenant existe-t-il seulement dans un contexte (ex : dossier, opération, contrat) ?
+* Le Tier est-il une entité de référence transverse, indépendamment des contextes ?
+
+### **6. Données et périmètre**
+
+* Quels champs appartiennent intrinsèquement au *Tier* (référence administrative) ?
+* Quels champs appartiennent intrinsèquement à l’*Intervenant* (rôle, fonction, relation au dossier) ?
+* Certains champs sont-ils partagés sans être sémantiquement identiques ?
+
+### **7. Divergence de données**
+
+* Si les données Tier et Intervenant diffèrent, est-ce considéré comme une erreur métier ?
+* Ou est-ce normal parce que ce sont deux objets distincts ?
+
+### **8. Source de vérité**
+
+* La source métier du Tier (ex : référentiel) est-elle différente de celle de l’Intervenant ?
+* Existe-t-il une vérité unique ou deux vérités légitimes ?
+
+### **9. Besoins consommateurs**
+
+* Les consommateurs manipulent-ils le même concept sous deux angles différents ?
+* Ou manipulent-ils réellement deux concepts métier distincts ?
+
+### **10. Impacts sur le modèle exposé**
+
+* Le métier préfère-t-il une ressource unique avec projections ?
+* Ou deux ressources distinctes pour refléter la structure métier ?
+
+---
+
+# **Phrase pour introduire ces questions à David**
+
+> J’aimerais éclaircir la modélisation entre “Tier” et “Intervenant” afin de stabiliser l’architecture exposée. Voici quelques points que je voudrais valider avec toi pour aligner parfaitement la vision métier et technique.
+
+---
+
+Si tu veux, je peux aussi ajouter une **grille de décision** à remplir ensemble, ou préparer un **compte-rendu d’arbitrage** une fois que David aura répondu.
